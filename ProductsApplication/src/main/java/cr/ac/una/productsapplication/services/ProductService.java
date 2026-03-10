@@ -29,7 +29,7 @@ public class ProductService {
     public List<ProductResponse> getAllProducts() {
         log.info("Fetching all products from the database");
 
-        return repository.findAll().stream().map(this::toResponse).toList();
+        return repository.findAllActive().stream().map(this::toResponse).toList();
     }
 
     public ProductResponse getProductById(Long id) {
