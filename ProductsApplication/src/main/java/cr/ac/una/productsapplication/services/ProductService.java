@@ -3,6 +3,8 @@ package cr.ac.una.productsapplication.services;
 import cr.ac.una.productsapplication.config.AppProperties;
 import cr.ac.una.productsapplication.dtos.product.CreateProductRequest;
 import cr.ac.una.productsapplication.dtos.product.ProductResponse;
+import cr.ac.una.productsapplication.dtos.product.UpdateProductRequest;
+import cr.ac.una.productsapplication.exceptions.InvalidSearchException;
 import cr.ac.una.productsapplication.exceptions.ProductNotFoundException;
 import cr.ac.una.productsapplication.models.Product;
 import cr.ac.una.productsapplication.repositories.IProductRepository;
@@ -38,33 +40,66 @@ public class ProductService {
         return toResponse(product);
     }
 
+    public List<ProductResponse> searchProductsByName(String name) {
+        if (name == null || name.trim().length() < 2) {
+            log.warn("Search term '{}' is too short. Returning empty list.", name);
+
+            throw new InvalidSearchException("Search term '" + name + "' is too short.");
+        }
+
+        log.info("Searching products with name containing '{}' in the database", name);
+
+        return repository.findByNameContaining(name).stream().map(this::toResponse).toList();
+    }
+
     public ProductResponse createProduct(CreateProductRequest request) {
         log.info("Creating new product from the database");
 
-        Product product = new Product(
-                null,
-                request.getName().trim(),
-                request.getPrice(),
-                true,
-                LocalDateTime.now()
-        );
+        Product product = new Product(null, request.getName().trim(), request.getPrice(), true, LocalDateTime.now());
 
         Product saved = repository.save(product);
 
         return toResponse(saved);
     }
 
+    public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
+        log.info("Updating product with id {} in the database", id);
+
+        Product product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.setName(request.getName().trim());
+        product.setPrice(request.getPrice());
+
+        Product updated = repository.update(product);
+
+        return toResponse(updated);
+    }
+
+    public ProductResponse changeActiveStatus(Long id, boolean value) {
+        log.info("Changing active status of product with id {} to {} in the database", id, value);
+
+        Product product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.setActive(value);
+
+        Product updated = repository.update(product);
+
+        return toResponse(updated);
+    }
+
+    public void deleteLogical(Long id) {
+        log.info("Logically deleting product with id {} in the database", id);
+
+        Product product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.setActive(false);
+
+        repository.update(product);
+    }
+
     private ProductResponse toResponse(Product product) {
         double finalPrice = product.getPrice() + (product.getPrice() * appProperties.getTaxRate());
 
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                finalPrice,
-                appProperties.getDefaultCurrency(),
-                product.isActive(),
-                product.getCreatedAt()
-        );
+        return new ProductResponse(product.getId(), product.getName(), product.getPrice(), finalPrice, appProperties.getDefaultCurrency(), product.isActive(), product.getCreatedAt());
     }
 }

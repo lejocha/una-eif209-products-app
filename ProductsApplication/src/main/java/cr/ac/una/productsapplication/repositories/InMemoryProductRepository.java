@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,8 +34,20 @@ public class InMemoryProductRepository implements IProductRepository {
     }
 
     @Override
+    public List<Product> findAllActive() {
+        return products.stream().filter(Product::isActive).toList();
+    }
+
+    @Override
     public Optional<Product> findById(Long id) {
         return products.stream().filter(product -> product.getId().equals(id)).findFirst();
+    }
+
+    @Override
+    public List<Product> findByNameContaining(String name) {
+        String query = name.toLowerCase().trim();
+
+        return products.stream().filter(Product::isActive).filter(product -> product.getName().toLowerCase().contains(query)).toList();
     }
 
     @Override
@@ -47,5 +60,17 @@ public class InMemoryProductRepository implements IProductRepository {
             products.add(product);
         }
         return product;
+    }
+
+    @Override
+    public Product update(Product product) {
+        for (int i = 0; i < products.size(); i++) {
+            if (products.get(i).getId().equals(product.getId())) {
+                products.set(i, product);
+                return product;
+            }
+        }
+
+        throw new IllegalArgumentException("Product with ID " + product.getId() + " not found.");
     }
 }
