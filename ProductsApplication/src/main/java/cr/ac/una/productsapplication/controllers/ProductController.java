@@ -1,30 +1,34 @@
 package cr.ac.una.productsapplication.controllers;
 
+import cr.ac.una.productsapplication.dtos.product.CreateProductRequest;
+import cr.ac.una.productsapplication.dtos.product.ProductResponse;
 import cr.ac.una.productsapplication.services.ProductService;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
 @RequestMapping("/products")
 public class ProductController {
-    private final ProductService productService;
+    private final ProductService service;
 
     public ProductController(ProductService service) {
-        this.productService = service;
+        this.service = service;
     }
 
     @GetMapping
-    @ResponseBody
-    public String listProducts() {
-        return productService.getAllProducts().toString();
+    public List<ProductResponse> findAll() {
+        return service.getAllProducts();
     }
 
     @GetMapping("/{id}")
-    @ResponseBody
-    public String getProductById(@PathVariable Long id) {
-        return productService.getProductById(id).toString();
+    public ProductResponse findById(@PathVariable Long id) {
+        return service.getProductById(id);
+    }
+
+    @PostMapping
+    public ProductResponse create(@Valid @RequestBody CreateProductRequest request) {
+        return service.createProduct(request);
     }
 }
