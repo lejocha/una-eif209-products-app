@@ -15,4 +15,13 @@ public class ViewExceptionHandler {
 
         return "products/error";
     }
+
+    @ExceptionHandler(Exception.class)
+    public String handleGenericException(Exception ex, Model model) {
+        model.addAttribute("pageTitle", "Error");
+        model.addAttribute("errorTitle", "An Error Occurred");
+        model.addAttribute("errorMessage", "An unexpected error occurred. Please try again later.");
+
+        return "products/error";
+    }
 }

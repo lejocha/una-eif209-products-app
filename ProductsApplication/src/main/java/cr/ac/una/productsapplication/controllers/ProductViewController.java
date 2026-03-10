@@ -18,8 +18,6 @@ public class ProductViewController {
         this.service = service;
     }
 
-
-
     @GetMapping
     public String list(Model model) {
         model.addAttribute("products", service.getAllProducts());
