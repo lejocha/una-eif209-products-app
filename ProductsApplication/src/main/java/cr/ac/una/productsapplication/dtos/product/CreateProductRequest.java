@@ -12,6 +12,8 @@ public class CreateProductRequest {
     @Positive(message = "Price must be a positive value")
     private double price;
 
+    public CreateProductRequest() {}
+
     public CreateProductRequest(String name, double price) {
         this.name = name;
         this.price = price;

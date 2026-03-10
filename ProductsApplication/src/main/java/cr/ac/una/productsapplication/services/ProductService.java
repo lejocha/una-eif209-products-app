@@ -4,7 +4,6 @@ import cr.ac.una.productsapplication.config.AppProperties;
 import cr.ac.una.productsapplication.dtos.product.CreateProductRequest;
 import cr.ac.una.productsapplication.dtos.product.ProductResponse;
 import cr.ac.una.productsapplication.dtos.product.UpdateProductRequest;
-import cr.ac.una.productsapplication.exceptions.InvalidSearchException;
 import cr.ac.una.productsapplication.exceptions.ProductNotFoundException;
 import cr.ac.una.productsapplication.models.Product;
 import cr.ac.una.productsapplication.repositories.IProductRepository;
@@ -40,16 +39,10 @@ public class ProductService {
         return toResponse(product);
     }
 
-    public List<ProductResponse> searchProductsByName(String name) {
-        if (name == null || name.trim().length() < 2) {
-            log.warn("Search term '{}' is too short. Returning empty list.", name);
+    public Product getDomainProductById(Long id) {
+        log.info("Fetching product with id {} from the database", id);
 
-            throw new InvalidSearchException("Search term '" + name + "' is too short.");
-        }
-
-        log.info("Searching products with name containing '{}' in the database", name);
-
-        return repository.findByNameContaining(name).stream().map(this::toResponse).toList();
+        return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     public ProductResponse createProduct(CreateProductRequest request) {
@@ -75,18 +68,6 @@ public class ProductService {
         return toResponse(updated);
     }
 
-    public ProductResponse changeActiveStatus(Long id, boolean value) {
-        log.info("Changing active status of product with id {} to {} in the database", id, value);
-
-        Product product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
-
-        product.setActive(value);
-
-        Product updated = repository.update(product);
-
-        return toResponse(updated);
-    }
-
     public void deleteLogical(Long id) {
         log.info("Logically deleting product with id {} in the database", id);
 
@@ -95,6 +76,14 @@ public class ProductService {
         product.setActive(false);
 
         repository.update(product);
+    }
+
+    public UpdateProductRequest buildUpdateRequest(Long id) {
+        log.info("Building update request for product with id {} from the database", id);
+
+        Product product = repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+
+        return new UpdateProductRequest(product.getName(), product.getPrice());
     }
 
     private ProductResponse toResponse(Product product) {
