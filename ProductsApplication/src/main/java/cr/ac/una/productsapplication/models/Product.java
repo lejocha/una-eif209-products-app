@@ -1,13 +1,30 @@
 package cr.ac.una.productsapplication.models;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "products")
 public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(nullable = false)
     private double price;
+
+    @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    public Product() {
+    }
 
     public Product(Long id, String name, double price, boolean active, LocalDateTime createdAt) {
         this.id = id;
@@ -15,6 +32,15 @@ public class Product {
         this.price = price;
         this.active = active;
         this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+
+        active = true;
     }
 
     public Long getId() {

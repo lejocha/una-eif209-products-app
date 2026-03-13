@@ -11,11 +11,13 @@ import cr.ac.una.productsapplication.repositories.IProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@Transactional
 public class ProductService {
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
     private final IProductRepository repository;
@@ -26,12 +28,14 @@ public class ProductService {
         this.appProperties = appProperties;
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> getAllProducts() {
         log.info("Fetching all products from the database");
 
-        return repository.findAllActive().stream().map(this::toResponse).toList();
+        return repository.findByActiveTrue().stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         log.info("Fetching product with id {} from the database", id);
 
@@ -40,6 +44,7 @@ public class ProductService {
         return toResponse(product);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> searchProductsByName(String name) {
         if (name == null || name.trim().length() < 2) {
             log.warn("Search term '{}' is too short. Returning empty list.", name);
@@ -49,7 +54,7 @@ public class ProductService {
 
         log.info("Searching products with name containing '{}' in the database", name);
 
-        return repository.findByNameContaining(name).stream().map(this::toResponse).toList();
+        return repository.findByActiveTrueAndNameContainingIgnoreCase(name).stream().map(this::toResponse).toList();
     }
 
     public ProductResponse createProduct(CreateProductRequest request) {
@@ -70,7 +75,7 @@ public class ProductService {
         product.setName(request.getName().trim());
         product.setPrice(request.getPrice());
 
-        Product updated = repository.update(product);
+        Product updated = repository.save(product);
 
         return toResponse(updated);
     }
@@ -82,7 +87,7 @@ public class ProductService {
 
         product.setActive(value);
 
-        Product updated = repository.update(product);
+        Product updated = repository.save(product);
 
         return toResponse(updated);
     }
@@ -94,7 +99,7 @@ public class ProductService {
 
         product.setActive(false);
 
-        repository.update(product);
+        repository.save(product);
     }
 
     private ProductResponse toResponse(Product product) {
