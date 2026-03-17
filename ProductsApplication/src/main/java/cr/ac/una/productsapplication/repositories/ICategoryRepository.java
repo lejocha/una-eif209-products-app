@@ -1,4 +1,7 @@
 package cr.ac.una.productsapplication.repositories;
 
-public interface ICategoryRepository {
+import cr.ac.una.productsapplication.models.Category;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ICategoryRepository extends JpaRepository<Category, Long> {
 }

@@ -3,7 +3,6 @@ package cr.ac.una.productsapplication.controllers;
 import cr.ac.una.productsapplication.dtos.product.CreateProductRequest;
 import cr.ac.una.productsapplication.dtos.product.ProductResponse;
 import cr.ac.una.productsapplication.dtos.product.UpdateProductRequest;
-import cr.ac.una.productsapplication.models.Product;
 import cr.ac.una.productsapplication.services.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 public class ProductController {
     private final ProductService service;
 
@@ -24,22 +23,22 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<ProductResponse>> findAll() {
-        return ResponseEntity.ok(service.getAllProducts());
+        return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getProductById(id));
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<ProductResponse>> searchByName(@RequestParam String name) {
-        return ResponseEntity.ok(service.searchProductsByName(name));
+        return ResponseEntity.ok(service.searchByName(name));
     }
 
     @PostMapping
     public ResponseEntity<ProductResponse> create(@Valid @RequestBody CreateProductRequest request) {
-        ProductResponse created = service.createProduct(request);
+        ProductResponse created = service.create(request);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(created.id()).toUri();
 
@@ -48,7 +47,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> update(@PathVariable Long id, @Valid @RequestBody UpdateProductRequest request) {
-        return ResponseEntity.ok(service.updateProduct(id, request));
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @PatchMapping("/{id}/active")
@@ -57,7 +56,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteLogical(@PathVariable Long id) {
         service.deleteLogical(id);
 
         return ResponseEntity.noContent().build();

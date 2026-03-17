@@ -3,6 +3,8 @@ package cr.ac.una.productsapplication.models;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "products")
@@ -23,15 +25,18 @@ public class Product {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    public Product() {
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    public Product(Long id, String name, double price, boolean active, LocalDateTime createdAt) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.active = active;
-        this.createdAt = createdAt;
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProductDetail detail;
+
+    @ManyToMany
+    @JoinTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> tags = new HashSet<>();
+
+    public Product() {
     }
 
     @PrePersist
@@ -39,7 +44,6 @@ public class Product {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-
         active = true;
     }
 
@@ -81,5 +85,33 @@ public class Product {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public ProductDetail getDetail() {
+        return detail;
+    }
+
+    public void setDetail(ProductDetail detail) {
+        this.detail = detail;
+
+        if (detail != null) {
+            detail.setProduct(this);
+        }
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
     }
 }

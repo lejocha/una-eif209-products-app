@@ -1,4 +1,4 @@
 package cr.ac.una.productsapplication.dtos.tag;
 
-public class TagResponse {
+public record TagResponse(Long id, String name) {
 }

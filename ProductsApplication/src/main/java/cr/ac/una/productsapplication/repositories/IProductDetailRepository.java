@@ -1,4 +1,7 @@
 package cr.ac.una.productsapplication.repositories;
 
-public interface IProductDetailRepository {
+import cr.ac.una.productsapplication.models.ProductDetail;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IProductDetailRepository extends JpaRepository<ProductDetail, Long> {
 }

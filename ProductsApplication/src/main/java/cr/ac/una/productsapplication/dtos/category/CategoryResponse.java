@@ -1,4 +1,4 @@
 package cr.ac.una.productsapplication.dtos.category;
 
-public class CategoryResponse {
+public record CategoryResponse(Long id, String name) {
 }
